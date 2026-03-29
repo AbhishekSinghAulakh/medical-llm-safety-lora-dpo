@@ -14,12 +14,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # CONFIG
 # -------------------------
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
-
 DATA_PATH = os.getenv("DATA_PATH", "./data/baseline_medquad.csv") # Download the pre-processed data from GDrive, Check /data/Readme.md
 OUTPUT_PATH = "./results/baseline_medquad_outputs.csv"
-
-EVAL_SAMPLES = 100
-MAX_NEW_TOKENS = 512
 
 # -------------------------
 # LOAD MODEL
@@ -54,7 +50,8 @@ Question:
 # -------------------------
 # GENERATION
 # -------------------------
-def generate_response(prompt: str) -> str:
+MAX_NEW_TOKENS = 512
+def generate_response(prompt: str, question: str) -> str:
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
     with torch.no_grad():
@@ -66,13 +63,19 @@ def generate_response(prompt: str) -> str:
             pad_token_id=tokenizer.eos_token_id
         )
 
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    # Robust extraction: keep text AFTER the question
+    if question in decoded:
+        decoded = decoded.split(question, 1)[1].strip()
+
+    return decoded
 
 # -------------------------
 # LOAD DATA
 # -------------------------
 df_medquad = pd.read_csv(DATA_PATH)
-
+EVAL_SAMPLES = 100
 df_baseline_medquad = df_medquad.sample(n=EVAL_SAMPLES, random_state=42).reset_index(drop=True)
 
 # -------------------------
@@ -101,7 +104,7 @@ for idx, row in df_baseline_medquad.iterrows():
 # -------------------------
 os.makedirs("results", exist_ok=True)
 
-df_baseline_medquad_eval = pd.DataFrame(outputs)
-df_baseline_medquad_eval.to_csv(OUTPUT_PATH, index=False)
+df_baseline_medquad_output = pd.DataFrame(outputs)
+df_baseline_medquad_output.to_csv(OUTPUT_PATH, index=False)
 
 print(f"Saved baseline outputs to {OUTPUT_PATH}")
