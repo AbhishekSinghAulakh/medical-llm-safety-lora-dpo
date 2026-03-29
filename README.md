@@ -52,6 +52,15 @@ results/ # Sample outputs
 configs/ # Configuration files (optional)
 docs/ # Supporting documentation
 
+medical-llm-safety-lora-dpo/
+│
+├── notebooks/        # Full experimental pipeline (Colab)
+├── src/              # Modular scripts for each stage
+├── data/             # Dataset links (not stored here)
+├── results/          # Sample outputs
+├── configs/          # Configuration files (optional)
+├── docs/             # Supporting documentation
+
 ---
 
 ## Dataset Access
