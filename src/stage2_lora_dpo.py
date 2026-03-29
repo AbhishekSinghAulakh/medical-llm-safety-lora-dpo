@@ -11,7 +11,7 @@ import torch
 import pandas as pd
 from datasets import Dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from trl import DPOTrainer
+from trl import DPOTrainer,DPOConfig
 from transformers import TrainingArguments
 from datasets import Dataset
 from peft import PeftModel
@@ -113,7 +113,7 @@ for idx, row in df_msb_dpo.iterrows():
     rejected_list.append(rejected)
 
     if idx % 5 == 0:
-        print(f"Generated {idx}/{len(df)}")
+        print(f"Generated {idx}/{len(df_msb_dpo)}")
 
 df_msb_dpo["rejected"] = rejected_list
 
@@ -144,7 +144,7 @@ model.enable_input_require_grads()
 print("Gradient checkpointing disabled.")
 
 dpo_config = DPOConfig(
-    output_dir=DPO_DIR,
+    output_dir=OUTPUT_DIR,
     per_device_train_batch_size=2,
     gradient_accumulation_steps=8,
     learning_rate=DPO_LR,
@@ -180,4 +180,4 @@ dpo_trainer.train()
 dpo_trainer.model.save_pretrained(OUTPUT_DIR)
 tokenizer.save_pretrained(OUTPUT_DIR)
 
-print("DPO-aligned model saved at:", DPO_DIR)
+print("DPO-aligned model saved at:", OUTPUT_DIR)
