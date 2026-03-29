@@ -42,7 +42,10 @@ The pipeline consists of four stages:
 
 ---
 
+
 ## Repository Structure
+
+```
 medical-llm-safety-lora-dpo/
 │
 ├── notebooks/        # End-to-end Colab pipeline (data prep + experiments)
@@ -57,6 +60,7 @@ medical-llm-safety-lora-dpo/
 ├── results/          # Evaluation outputs and metrics
 ├── configs/          # Training configurations (optional)
 ├── docs/             # Supporting documentation
+```
 
 ---
 
