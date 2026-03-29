@@ -31,7 +31,6 @@ from peft import (
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
 DATA_PATH = os.getenv("DATA_PATH", "./data/baseline_medquad.csv.csv")
 OUTPUT_DIR = "./outputs/lora_model"
-MAX_LENGTH = 512
 
 # -------------------------
 # LOAD DATA
@@ -48,6 +47,7 @@ df_medquad_lora.head()
 # -------------------------
 # Tokenization for Supervised LoRA Fine-tuning
 # -------------------------
+MAX_SEQ_LEN = 512
 def tokenize_row(row):
     prompt = format_prompt(row["prompt"])
     full_text = prompt + "\n" + row["reference_response"]
@@ -116,16 +116,16 @@ lora_model.print_trainable_parameters()
 # -------------------------
 # TRAINING ARGS
 # -------------------------
-SFT_LR = 2e-4
-SFT_EPOCHS = 2
+LORA_LR = 2e-4
+LORA_EPOCHS = 2
 SEED=42
 
 training_args = TrainingArguments(
     output_dir=str(OUTPUT_DIR),
     per_device_train_batch_size=2,
     gradient_accumulation_steps=8,
-    learning_rate=SFT_LR,
-    num_train_epochs=SFT_EPOCHS,
+    learning_rate=LORA_LR,
+    num_train_epochs=LORA_EPOCHS,
     fp16=True,
     logging_steps=50,
     save_strategy="epoch",
