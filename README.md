@@ -1,5 +1,3 @@
----
-
 ## Overview
 
 This repository contains the complete implementation of the research pipeline described in the dissertation *"Mitigating Medical Misinformation under Adversarial Prompts using a LoRA + DPO Staged Pipeline"*. The study investigates whether a sequential two-stage fine-tuning framework — combining Low-Rank Adaptation (LoRA) for domain grounding and Direct Preference Optimization (DPO) for safety alignment — can improve the adversarial robustness of a medical large language model.
