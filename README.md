@@ -188,6 +188,7 @@ The staged design enables systematic evaluation of the contribution of each comp
 
 ## Pipeline Flow
 
+```
 Baseline Model (Mistral-7B)
 │
 ▼
@@ -204,7 +205,7 @@ Stage 3: Final Evaluation (CARES / MedSafetyBench)
 │
 ▼
 Results: ASR ↓, Safety ↑, Quality ↑
-
+```
 
 ---
 ## Repository Structure
