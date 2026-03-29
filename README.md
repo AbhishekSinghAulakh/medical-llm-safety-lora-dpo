@@ -43,4 +43,67 @@ The pipeline consists of four stages:
 ---
 
 ## Repository Structure
+medical-llm-safety-lora-dpo/
+│
+├── notebooks/ # Full experimental pipeline (Colab)
+├── src/ # Modular scripts for each stage
+├── data/ # Dataset links (not stored here)
+├── results/ # Sample outputs
+├── configs/ # Configuration files (optional)
+├── docs/ # Supporting documentation
 
+---
+
+## Dataset Access
+
+Due to size constraints, datasets are not included in this repository.
+
+Preprocessed datasets used in this study are available here:
+
+👉 [Google Drive Link — ADD YOUR LINK HERE]
+
+Original sources:
+- MedQuAD
+- MedSafetyBench
+- CARES
+
+Dataset preprocessing and transformation logic is implemented in: notebooks/staged_pipeline.ipynb
+
+
+---
+
+## Reproducibility
+
+This project supports two modes of execution:
+
+### 1. Notebook-based (Recommended)
+- End-to-end pipeline execution
+- Includes dataset preprocessing
+
+### 2. Script-based
+- Modular execution via:
+
+src/stage0_baseline_medquad.py
+src/stage0_baseline_adversarial.py
+src/stage1_lora.py
+src/stage2_dpo.py
+src/stage3_evaluation.py
+
+
+Scripts assume preprocessed datasets are available.
+
+---
+
+## Key Findings
+
+- LoRA significantly reduces adversarial vulnerability (ASR reduction)
+- DPO improves response quality but does not further reduce ASR
+- Combined pipeline achieves best safety–utility balance
+
+---
+
+## Citation
+
+If referencing this work, please cite the associated dissertation.
+
+---
