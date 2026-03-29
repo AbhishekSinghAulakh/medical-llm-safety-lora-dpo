@@ -4,11 +4,10 @@ Stage 1: LoRA Fine-Tuning (Domain Grounding)
 -------------------------------------------
 Applies LoRA to Mistral-7B using MedQuAD dataset.
 """
-!pip install -q transformers peft accelerate bitsandbytes
-
 import os
 import pandas as pd
 import torch
+import transformers
 import numpy as np
 from datasets import Dataset
 from pathlib import Path
@@ -29,9 +28,9 @@ from peft import (
 # CONFIG
 # -------------------------
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
-DATA_PATH = os.getenv("DATA_PATH", "./data/baseline_medquad.csv.csv")
+DATA_PATH = os.getenv("DATA_PATH", "./data/medquad.csv")
 OUTPUT_DIR = "./outputs/lora_model"
-
+SEED=42
 # -------------------------
 # LOAD DATA
 # -------------------------
@@ -41,7 +40,7 @@ df_medquad = pd.read_csv(DATA_PATH)
 TRAIN_SAMPLES = min(10000, len(df_medquad))
 df_medquad_lora = df_medquad.sample(n=TRAIN_SAMPLES, random_state=SEED).reset_index(drop=True)
 
-print("Training samples:", len(df))
+print("Training samples:", len(df_medquad_lora))
 df_medquad_lora.head()
 
 # -------------------------
@@ -118,7 +117,7 @@ lora_model.print_trainable_parameters()
 # -------------------------
 LORA_LR = 2e-4
 LORA_EPOCHS = 2
-SEED=42
+
 
 training_args = TrainingArguments(
     output_dir=str(OUTPUT_DIR),
