@@ -5,7 +5,7 @@ Dataset links will be added here ...
 Datasets are not stored in this repository due to size limitations.
 
 ## Access Link
-[PASTE GOOGLE DRIVE LINK HERE]
+https://drive.google.com/drive/folders/1lt_la72CMBQSVdZHM27bIoPdKHc_ZZ1v?usp=sharing 
 
 ## Included Datasets
 - MedQuAD (processed)
