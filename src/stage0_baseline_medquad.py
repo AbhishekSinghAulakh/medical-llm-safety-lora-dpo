@@ -15,7 +15,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # -------------------------
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
 
-DATA_PATH = os.getenv("DATA_PATH", "./data/baseline_medquad.csv")
+DATA_PATH = os.getenv("DATA_PATH", "./data/baseline_medquad.csv") # Download the pre-processed data from GDrive, Check /data/Readme.md
 OUTPUT_PATH = "./results/baseline_medquad_outputs.csv"
 
 EVAL_SAMPLES = 100
