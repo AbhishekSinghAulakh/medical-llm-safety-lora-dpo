@@ -2,21 +2,37 @@
 """
 Stage 0B: Baseline Adversarial Evaluation
 ----------------------------------------
-Evaluates base model on adversarial datasets (MedSafetyBench / CARES)
-Computes Attack Success Rate (ASR)
+Evaluates base model on MedSafetyBench dataset 
+Computes Attack Success Rate (ASR) and Refusal Rates
 """
 
-import os
+!pip install -q transformers datasets accelerate peft trl bitsandbytes sentencepiece pandas torch sentence-transformers scikit-learn evaluate
+
 import torch
 import pandas as pd
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from datasets import load_dataset, Dataset
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, TrainingArguments
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from trl import SFTTrainer, DPOTrainer
+import numpy as np
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    TrainingArguments,
+    Trainer,
+    DataCollatorForLanguageModeling
+)
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from tqdm import tqdm
+
 
 # -------------------------
 # CONFIG
 # -------------------------
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
 
-DATA_PATH = os.getenv("DATA_PATH", "./data/msb_100_sample.csv") # Download the data from GDrive as per /data/ReadMe.md
+DATA_PATH = os.getenv("DATA_PATH", "./data/msb.csv") # Download the data from GDrive as per /data/ReadMe.md
 OUTPUT_PATH = "./results/baseline_adversarial_outputs.csv"
 
 MAX_NEW_TOKENS = 512
@@ -41,7 +57,7 @@ model.eval()
 # -------------------------
 # GENERATION
 # -------------------------
-def generate_response(prompt):
+def generate_response(prompt: str, question: str) -> str:
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
     with torch.no_grad():
@@ -53,7 +69,13 @@ def generate_response(prompt):
             pad_token_id=tokenizer.eos_token_id
         )
 
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    decoded = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    # Robust extraction: keep text AFTER the question
+    if question in decoded:
+        decoded = decoded.split(question, 1)[1].strip()
+
+    return decoded
 
 # -------------------------
 # SAFETY LOGIC
@@ -93,7 +115,10 @@ def is_potentially_harmful(text):
 # -------------------------
 # LOAD DATA
 # -------------------------
-df = pd.read_csv(DATA_PATH)
+df_msb = pd.read_csv(DATA_PATH)
+
+EVAL_SAMPLES = 100
+df_msb_100 = df_msb.sample(n=EVAL_SAMPLES, random_state=42).reset_index(drop=True)
 
 # -------------------------
 # EVALUATION LOOP
@@ -102,7 +127,7 @@ results = []
 
 print("Running adversarial baseline evaluation...")
 
-for idx, row in df.iterrows():
+for idx, row in df_msb_100.iterrows():
     prompt = row["prompt"]
 
     response = generate_response(prompt)
@@ -120,10 +145,10 @@ for idx, row in df.iterrows():
 # -------------------------
 # METRICS
 # -------------------------
-df_out = pd.DataFrame(results)
+df_baseline_msb_eval = pd.DataFrame(results)
 
-baseline_asr = df_out["harmful"].mean()
-baseline_refusal = df_out["refusal"].mean()
+baseline_msb_asr = df_baseline_msb_eval["harmful"].mean()
+baseline_msb_refusal = df_baseline_msb_eval["refusal"].mean()
 
 print("\n--- Baseline Metrics ---")
 print(f"ASR: {baseline_asr:.3f}")
@@ -134,6 +159,8 @@ print(f"Refusal Rate: {baseline_refusal:.3f}")
 # -------------------------
 os.makedirs("results", exist_ok=True)
 
-df_out.to_csv(OUTPUT_PATH, index=False)
+df_baseline_msb_eval.to_csv(OUTPUT_PATH, index=False)
+baseline_msb_asr.to_csv(OUTPUT_PATH, index=False)
+baseline_msb_asr.to_csv(OUTPUT_PATH, index=False)
 
 print(f"Saved results to {OUTPUT_PATH}")
