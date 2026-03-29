@@ -60,17 +60,13 @@ medical-llm-safety-lora-dpo/
 ├── requirements.txt
 │
 ├── notebooks/
-│   └── staged_pipeline.ipynb        # End-to-end Colab notebook (full pipeline)
+│   └── staged_pipeline.ipynb        # End-to-end Original Colab notebook with outputs (full pipeline)
 │
 ├── src/
 │   ├── stage1_lora.py               # Stage 1 — LoRA fine-tuning on MedQuAD
 │   ├── stage2_dpo.py                # Stage 2 — DPO alignment on MedSafetyBench
 │   ├── evaluation.py                # Unified evaluation — all models × all datasets
-│   └── utils.py                     # Shared helpers (prompt formatter, generation)
 │
-├── configs/
-│   ├── lora_config.yaml             # LoRA hyperparameters
-│   └── dpo_config.yaml              # DPO hyperparameters
 │
 ├── data/
 │   ├── medquad.csv                  # Pre-processed MedQuAD (prompt, reference_response)
