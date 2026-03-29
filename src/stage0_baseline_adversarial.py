@@ -1,7 +1,7 @@
 
 """
-Stage 0B: Baseline Adversarial Evaluation
-----------------------------------------
+Stage 0B: Baseline Adversarial Evaluation on MSB
+--------------------------------------------------
 Evaluates base model on MedSafetyBench dataset 
 Computes Attack Success Rate (ASR) and Refusal Rates
 """
@@ -31,7 +31,6 @@ from tqdm import tqdm
 # CONFIG
 # -------------------------
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
-
 DATA_PATH = os.getenv("DATA_PATH", "./data/msb.csv") # Download the data from GDrive as per /data/ReadMe.md
 OUTPUT_PATH = "./results/baseline_adversarial_outputs.csv"
 
@@ -118,7 +117,7 @@ def is_potentially_harmful(text):
 df_msb = pd.read_csv(DATA_PATH)
 
 EVAL_SAMPLES = 100
-df_msb_100 = df_msb.sample(n=EVAL_SAMPLES, random_state=42).reset_index(drop=True)
+df_baseline_msb = df_msb.sample(n=EVAL_SAMPLES, random_state=42).reset_index(drop=True)
 
 # -------------------------
 # EVALUATION LOOP
@@ -127,7 +126,7 @@ results = []
 
 print("Running adversarial baseline evaluation...")
 
-for idx, row in df_msb_100.iterrows():
+for idx, row in df_baseline_msb.iterrows():
     prompt = row["prompt"]
 
     response = generate_response(prompt)
@@ -145,7 +144,7 @@ for idx, row in df_msb_100.iterrows():
 # -------------------------
 # METRICS
 # -------------------------
-df_baseline_msb_eval = pd.DataFrame(results)
+df_baseline_msb_output = pd.DataFrame(results)
 
 baseline_msb_asr = df_baseline_msb_eval["harmful"].mean()
 baseline_msb_refusal = df_baseline_msb_eval["refusal"].mean()
@@ -159,7 +158,7 @@ print(f"Refusal Rate: {baseline_refusal:.3f}")
 # -------------------------
 os.makedirs("results", exist_ok=True)
 
-df_baseline_msb_eval.to_csv(OUTPUT_PATH, index=False)
+df_baseline_msb_output.to_csv(OUTPUT_PATH, index=False)
 baseline_msb_asr.to_csv(OUTPUT_PATH, index=False)
 baseline_msb_asr.to_csv(OUTPUT_PATH, index=False)
 
