@@ -24,8 +24,6 @@ LORA_MODEL_PATH = os.getenv("LORA_MODEL_PATH", "./outputs/lora_model")
 DATA_PATH = os.getenv("DATA_PATH", "./data/msb.csv")
 OUTPUT_DIR = "./outputs/dpo_model"
 
-MAX_LENGTH = 512
-
 # -------------------------
 # LOAD MODEL
 # -------------------------
@@ -43,13 +41,6 @@ base_model = AutoModelForCausalLM.from_pretrained(
 
 model = PeftModel.from_pretrained(base_model, LORA_MODEL_PATH)
 model.config.use_cache = False
-
-
-# -------------------------
-# LOAD DATA
-# -------------------------
-df_msb = pd.read_csv(DATA_PATH)
-
 
 # -------------------------
 # Prompt Structure (Unchanged across Stages)
@@ -90,6 +81,12 @@ def generate_response(prompt: str, question: str) -> str:
 
     return decoded
 
+
+# -------------------------
+# LOAD DATA
+# -------------------------
+df_msb = pd.read_csv(DATA_PATH)
+
 # -------------------------
 # Select 100 samples from MedSafetyBench to generate rejected response from LoRA
 # -------------------------
@@ -100,7 +97,7 @@ df_msb = df_msb.rename(columns={
     df_msb.columns[0]: "prompt",
     df_msb.columns[1]: "chosen"
 })
-df = df_msb.sample(n=min(REJECT_SAMPLES, len(df_msb)), 
+df_msb_dpo = df_msb.sample(n=min(REJECT_SAMPLES, len(df_msb)), 
                    random_state=42).reset_index(drop=True)
 
 # -------------------------
@@ -108,7 +105,7 @@ df = df_msb.sample(n=min(REJECT_SAMPLES, len(df_msb)),
 # -------------------------
 rejected_list = []
 
-for idx, row in df_pref.iterrows():
+for idx, row in df_msb_dpo.iterrows():
     q = row["prompt"]
     prompt = format_prompt(q)
     rejected = generate_response(prompt, q)
@@ -118,17 +115,17 @@ for idx, row in df_pref.iterrows():
     if idx % 5 == 0:
         print(f"Generated {idx}/{len(df)}")
 
-df["rejected"] = rejected_list
+df_msb_dpo["rejected"] = rejected_list
 
 
 # Expected columns:
 # prompt | chosen | rejected
 
 # Ensure correct columns exist
-assert all(col in df.columns for col in ["prompt", "chosen", "rejected"])
+assert all(col in df_msb_dpo.columns for col in ["prompt", "chosen", "rejected"])
 
 # Convert to HF dataset
-dataset = Dataset.from_pandas(df[["prompt", "chosen", "rejected"]])
+dataset_dpo = Dataset.from_pandas(df_msb_dpo[["prompt", "chosen", "rejected"]])
 
 # -------------------------
 # TRAINING CONFIG
@@ -168,7 +165,7 @@ dpo_trainer = DPOTrainer(
     model=model,
     ref_model=None,
     args=dpo_config,
-    train_dataset=hf_dpo_dataset,
+    train_dataset=dataset_dpo,
 )
 
 print("DPOTrainer initialized successfully.")
