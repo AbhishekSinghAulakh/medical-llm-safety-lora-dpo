@@ -17,7 +17,7 @@ from peft import LoraConfig, get_peft_model
 # -------------------------
 MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
 
-DATA_PATH = os.getenv("DATA_PATH", "./data/medquad_processed.csv")
+DATA_PATH = os.getenv("DATA_PATH", "./data/medquad.csv")
 OUTPUT_DIR = "./outputs/lora_model"
 
 MAX_LENGTH = 512
@@ -40,7 +40,14 @@ model = AutoModelForCausalLM.from_pretrained(
 # -------------------------
 # LOAD DATA
 # -------------------------
-df = pd.read_csv(DATA_PATH)
+df_medquad = pd.read_csv(DATA_PATH)
+
+# Setting Training size to 10k
+TRAIN_SAMPLES = min(10000, len(df_medquad))
+df = df_medquad.sample(n=TRAIN_SAMPLES, random_state=SEED).reset_index(drop=True)
+
+print("Training samples:", len(df))
+df.head()
 
 # Convert to HF dataset
 dataset = Dataset.from_pandas(df)
