@@ -1,8 +1,3 @@
-# Mitigating Medical Misinformation under Adversarial Prompts using LoRA + DPO
-
-**MSc in Machine Learning and Artificial Intelligence — Liverpool John Moores University, UK**
-**Author: Abhishek Singh (PN1187229) — July 2025**
-
 ---
 
 ## Overview
