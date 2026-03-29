@@ -14,10 +14,12 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from trl import DPOTrainer
 from transformers import TrainingArguments
 from datasets import Dataset
+from peft import PeftModel
 
 # -------------------------
 # CONFIG
 # -------------------------
+MODEL_NAME = "mistralai/Mistral-7B-Instruct-v0.3"
 LORA_MODEL_PATH = os.getenv("LORA_MODEL_PATH", "./outputs/lora_model")
 DATA_PATH = os.getenv("DATA_PATH", "./data/msb.csv")
 OUTPUT_DIR = "./outputs/dpo_model"
@@ -29,13 +31,19 @@ MAX_LENGTH = 512
 # -------------------------
 print("Loading LoRA model...")
 
-tokenizer = AutoTokenizer.from_pretrained(LORA_MODEL_PATH, use_fast=True)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=True)
+if tokenizer.pad_token is None:
+    tokenizer.pad_token = tokenizer.eos_token
 
-model = AutoModelForCausalLM.from_pretrained(
-    LORA_MODEL_PATH,
+base_model = AutoModelForCausalLM.from_pretrained(
+    MODEL_NAME,
     torch_dtype=torch.float16,
     device_map="auto"
 )
+
+model = PeftModel.from_pretrained(base_model, LORA_MODEL_PATH)
+model.config.use_cache = False
+
 
 # -------------------------
 # LOAD DATA
@@ -60,8 +68,8 @@ Question:
 # Function to generate Rejected Responses from LoRA model
 # -------------------------
 
-MAX_SEQ_LEN = 1024           # Increased from 512
-MAX_NEW_TOKENS = 512        # Increased from 256
+MAX_SEQ_LEN = 1024         
+MAX_NEW_TOKENS = 512
 
 def generate_response(prompt: str, question: str) -> str:
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
@@ -117,40 +125,62 @@ df["rejected"] = rejected_list
 # prompt | chosen | rejected
 
 # Ensure correct columns exist
-assert all(col in df_pref.columns for col in ["prompt", "chosen", "rejected"])
+assert all(col in df.columns for col in ["prompt", "chosen", "rejected"])
 
 # Convert to HF dataset
-dataset = Dataset.from_pandas(df_pref[["prompt", "chosen", "rejected"]])
+dataset = Dataset.from_pandas(df[["prompt", "chosen", "rejected"]])
 
 # -------------------------
 # TRAINING CONFIG
 # -------------------------
-training_args = TrainingArguments(
-    output_dir=OUTPUT_DIR,
-    per_device_train_batch_size=2,
-    num_train_epochs=1,
-    logging_steps=10,
-    save_strategy="epoch"
-)
 
+DPO_LR = 5e-5
+DPO_EPOCHS = 2              
+DPO_BETA = 0.3              
+
+# ---- Stability Fixes ----
+model.gradient_checkpointing_disable()
+
+# Ensure inputs require grad for LoRA layers
+model.enable_input_require_grads()
+
+print("Gradient checkpointing disabled.")
+
+dpo_config = DPOConfig(
+    output_dir=DPO_DIR,
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=8,
+    learning_rate=DPO_LR,
+    num_train_epochs=DPO_EPOCHS,
+    beta=DPO_BETA,
+    logging_steps=25,
+    save_steps=500,
+    bf16=True,
+    gradient_checkpointing=False,
+    report_to="none",
+    seed=42,
+)
 
 # -------------------------
 # DPO TRAINER
 # -------------------------
-trainer = DPOTrainer(
+dpo_trainer = DPOTrainer(
     model=model,
-    args=training_args,
-    train_dataset=dataset,
-    tokenizer=tokenizer
+    ref_model=None,
+    args=dpo_config,
+    train_dataset=hf_dpo_dataset,
 )
 
+print("DPOTrainer initialized successfully.")
+
 print("Starting DPO training...")
-trainer.train()
+dpo_trainer.train()
 
 # -------------------------
 # SAVE
 # -------------------------
-model.save_pretrained(OUTPUT_DIR)
+
+dpo_trainer.model.save_pretrained(OUTPUT_DIR)
 tokenizer.save_pretrained(OUTPUT_DIR)
 
-print(f"DPO model saved to {OUTPUT_DIR}")
+print("DPO-aligned model saved at:", DPO_DIR)
