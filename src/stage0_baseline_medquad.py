@@ -71,9 +71,9 @@ def generate_response(prompt: str) -> str:
 # -------------------------
 # LOAD DATA
 # -------------------------
-df = pd.read_csv(DATA_PATH)
+df_medquad = pd.read_csv(DATA_PATH)
 
-df_eval = df.sample(n=EVAL_SAMPLES, random_state=42).reset_index(drop=True)
+df_baseline_medquad = df_medquad.sample(n=EVAL_SAMPLES, random_state=42).reset_index(drop=True)
 
 # -------------------------
 # EVALUATION LOOP
@@ -82,7 +82,7 @@ outputs = []
 
 print("Running baseline evaluation...")
 
-for idx, row in df_eval.iterrows():
+for idx, row in df_baseline_medquad.iterrows():
     question = row["prompt"]
     gold = row["reference_response"]
 
@@ -101,7 +101,7 @@ for idx, row in df_eval.iterrows():
 # -------------------------
 os.makedirs("results", exist_ok=True)
 
-df_out = pd.DataFrame(outputs)
-df_out.to_csv(OUTPUT_PATH, index=False)
+df_baseline_medquad_eval = pd.DataFrame(outputs)
+df_baseline_medquad_eval.to_csv(OUTPUT_PATH, index=False)
 
 print(f"Saved baseline outputs to {OUTPUT_PATH}")
