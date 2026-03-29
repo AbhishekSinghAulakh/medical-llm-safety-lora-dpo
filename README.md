@@ -1,6 +1,3 @@
-# medical-llm-safety-lora-dpo
-Mitigating Medical Misinformation using LoRA + DPO staged fine-tuning pipeline
-
 # Mitigating Medical Misinformation under Adversarial Prompts using LoRA + DPO
 
 **MSc in Machine Learning and Artificial Intelligence — Liverpool John Moores University, UK**
