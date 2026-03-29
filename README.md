@@ -44,21 +44,18 @@ The pipeline consists of four stages:
 
 ## Repository Structure
 medical-llm-safety-lora-dpo/
-
-notebooks/ # Full experimental pipeline (Colab)
-src/ # Modular scripts for each stage
-data/ # Dataset links (not stored here)
-results/ # Sample outputs
-configs/ # Configuration files (optional)
-docs/ # Supporting documentation
-
-medical-llm-safety-lora-dpo/
 │
-├── notebooks/        # Full experimental pipeline (Colab)
-├── src/              # Modular scripts for each stage
-├── data/             # Dataset links (not stored here)
-├── results/          # Sample outputs
-├── configs/          # Configuration files (optional)
+├── notebooks/        # End-to-end Colab pipeline (data prep + experiments)
+├── src/              # Modular implementation of each stage
+│   ├── stage0_baseline_medquad.py
+│   ├── stage0_baseline_adversarial.py
+│   ├── stage1_lora.py
+│   ├── stage2_dpo.py
+│   └── stage3_evaluation.py
+│
+├── data/             # External dataset links (Google Drive)
+├── results/          # Evaluation outputs and metrics
+├── configs/          # Training configurations (optional)
 ├── docs/             # Supporting documentation
 
 ---
