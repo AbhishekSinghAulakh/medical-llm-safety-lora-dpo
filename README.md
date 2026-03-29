@@ -42,22 +42,6 @@ The pipeline consists of four stages:
 
 ---
 
-## Pipeline Flow
- # Methodology
-
-## Overview
-
-This project implements a staged fine-tuning pipeline to improve the safety and reliability of Large Language Models (LLMs) in medical contexts. The methodology follows a structured progression from baseline evaluation to domain adaptation and alignment, culminating in comparative evaluation.
-
-The pipeline consists of four stages:
-
-1. Baseline Evaluation
-2. LoRA Fine-Tuning (Domain Grounding)
-3. DPO Alignment (Safety Alignment)
-4. Final Evaluation and Comparison
-
----
-
 ## Stage 0 — Baseline Evaluation
 
 ### Objective
