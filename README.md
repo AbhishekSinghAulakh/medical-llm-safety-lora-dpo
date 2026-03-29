@@ -44,13 +44,13 @@ The pipeline consists of four stages:
 
 ## Repository Structure
 medical-llm-safety-lora-dpo/
-│
-├── notebooks/ # Full experimental pipeline (Colab)
-├── src/ # Modular scripts for each stage
-├── data/ # Dataset links (not stored here)
-├── results/ # Sample outputs
-├── configs/ # Configuration files (optional)
-├── docs/ # Supporting documentation
+
+notebooks/ # Full experimental pipeline (Colab)
+src/ # Modular scripts for each stage
+data/ # Dataset links (not stored here)
+results/ # Sample outputs
+configs/ # Configuration files (optional)
+docs/ # Supporting documentation
 
 ---
 
